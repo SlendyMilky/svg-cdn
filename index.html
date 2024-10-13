@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG-CDN</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        fetch('README.md')
+            .then(response => response.text())
+            .then(text => {
+                document.getElementById('readme-container').innerHTML = marked.parse(text);
+            });
+
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color-scheme: light dark;
+            flex-direction: column;
+        }
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('background.avif') no-repeat center center;
+            background-size: cover;
+            filter: blur(20px);
+            z-index: -1;
+        }
+        #readme-container {
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            height: 80%;
+            overflow-y: auto;
+            color: #3341be;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #project-icon {
+            width: 100px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center !important;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <img id="project-icon" src="favicon.ico" alt="Icone du projet">
+    <div id="readme-container"></div>
+    <footer>
+        &copy; 2024 - <span id="current-year"></span> with ❤️ by 
+        <a href="https://github.com/SlendyMilky" target="_blank">Slendy_Milky</a>
+    </footer>
+</body>
+</html>
