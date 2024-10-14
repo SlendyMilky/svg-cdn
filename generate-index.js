@@ -70,12 +70,12 @@ function generateIndexHtml(dirPath) {
             margin-right: 10px;
         }
         .toast-nav {
-            position: fixed;
             top: 10px;
             right: 10px;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 5px;
             padding: 10px;
+            margin-bottom: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .toast-nav a {
@@ -106,13 +106,18 @@ function generateIndexHtml(dirPath) {
         <table>
 `;
 
+    let jsonContent = [];
+
     files.forEach(file => {
-        if (file === 'index.html') return; // Exclude index.html files
+        if (file === 'index.html' || file === 'files.json') return;
         const filePath = path.join(dirPath, file);
         const isDirectory = fs.statSync(filePath).isDirectory();
         const fileIcon = isDirectory ? '📁' : `<img src="${file}" alt="${file}">`;
-        const fileUrl = `${dirPath}/${file}`;
-        htmlContent += `<tr class="file-item"><td><a href="${file}">${file}${isDirectory ? '/' : ''}</a></td><td>${fileIcon}</td><td><button class="copy-button" onclick="navigator.clipboard.writeText('${fileUrl}')">📋</button></td></tr>\n`;
+        const fileUrl = `/assets/${path.relative(path.join(__dirname, 'assets'), filePath)}`;
+        if (!isDirectory) {
+            jsonContent.push({ name: file, url: fileUrl });
+        }
+        htmlContent += `<tr class="file-item"><td><a href="${fileUrl}">${file}${isDirectory ? '/' : ''}</a></td><td>${fileIcon}</td>\n`;
     });
 
     htmlContent += `
@@ -130,6 +135,7 @@ function generateIndexHtml(dirPath) {
 `;
 
     fs.writeFileSync(path.join(dirPath, 'index.html'), htmlContent);
+    fs.writeFileSync(path.join(dirPath, 'files.json'), JSON.stringify(jsonContent, null, 2));
 }
 
 function updateRootIndexHtml() {

@@ -1,2 +1,5 @@
 /assets/**/index.html
 /assets/index.html
+
+/assets/**/files.json
+/assets/files.json
