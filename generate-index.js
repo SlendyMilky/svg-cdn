@@ -1,10 +1,15 @@
+const fs = require('fs');
+const path = require('path');
 
+function generateIndexHtml(dirPath) {
+    const files = fs.readdirSync(dirPath);
+    let htmlContent = `
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index of assets</title>
+    <title>Index of ${path.basename(dirPath)}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <style>
@@ -97,11 +102,20 @@
         <!-- Add more links as needed -->
     </div>
     <div id="file-list">
-        <h1>Index of assets</h1>
+        <h1>Index of ${path.basename(dirPath)}</h1>
         <table>
-<tr class="file-item"><td><a href="sbb">sbb/</a></td><td>📁</td><td><button class="copy-button" onclick="navigator.clipboard.writeText('C:\Users\SlendyMilky\Documents\GitHub\svg-cdn\assets/sbb')">📋</button></td></tr>
-<tr class="file-item"><td><a href="test">test/</a></td><td>📁</td><td><button class="copy-button" onclick="navigator.clipboard.writeText('C:\Users\SlendyMilky\Documents\GitHub\svg-cdn\assets/test')">📋</button></td></tr>
+`;
 
+    files.forEach(file => {
+        if (file === 'index.html') return; // Exclude index.html files
+        const filePath = path.join(dirPath, file);
+        const isDirectory = fs.statSync(filePath).isDirectory();
+        const fileIcon = isDirectory ? '📁' : `<img src="${file}" alt="${file}">`;
+        const fileUrl = `${dirPath}/${file}`;
+        htmlContent += `<tr class="file-item"><td><a href="${file}">${file}${isDirectory ? '/' : ''}</a></td><td>${fileIcon}</td><td><button class="copy-button" onclick="navigator.clipboard.writeText('${fileUrl}')">📋</button></td></tr>\n`;
+    });
+
+    htmlContent += `
         </table>
     </div>
     <footer>
@@ -113,3 +127,53 @@
     </script>
 </body>
 </html>
+`;
+
+    fs.writeFileSync(path.join(dirPath, 'index.html'), htmlContent);
+}
+
+function updateRootIndexHtml() {
+    const rootIndexPath = path.join(__dirname, 'index.html');
+    let rootHtmlContent = fs.readFileSync(rootIndexPath, 'utf-8');
+
+    const startMarker = '<!-- START GENERATED INDEX -->';
+    const endMarker = '<!-- END GENERATED INDEX -->';
+
+    const files = fs.readdirSync(path.join(__dirname, 'assets'));
+    let generatedIndex = '<div id="assets-index"><h2>Index des assets</h2><ul>';
+
+    files.forEach(file => {
+        const filePath = path.join(__dirname, 'assets', file);
+        const isDirectory = fs.statSync(filePath).isDirectory();
+        if (isDirectory) {
+            generatedIndex += `<li><a href="/assets/${file}/index.html">${file}</a></li>`;
+        }
+    });
+
+    generatedIndex += '</ul></div>';
+
+    const startIndex = rootHtmlContent.indexOf(startMarker);
+    const endIndex = rootHtmlContent.indexOf(endMarker) + endMarker.length;
+
+    if (startIndex !== -1 && endIndex !== -1) {
+        rootHtmlContent = rootHtmlContent.slice(0, startIndex + startMarker.length) + '\n' + generatedIndex + '\n' + rootHtmlContent.slice(endIndex);
+    } else {
+        rootHtmlContent += `\n${startMarker}\n${generatedIndex}\n${endMarker}\n`;
+    }
+
+    fs.writeFileSync(rootIndexPath, rootHtmlContent);
+}
+
+function walkDir(dirPath) {
+    generateIndexHtml(dirPath);
+    const files = fs.readdirSync(dirPath);
+    files.forEach(file => {
+        const filePath = path.join(dirPath, file);
+        if (fs.statSync(filePath).isDirectory()) {
+            walkDir(filePath);
+        }
+    });
+}
+
+walkDir(path.join(__dirname, 'assets'));
+updateRootIndexHtml();
