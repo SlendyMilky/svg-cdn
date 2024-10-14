@@ -153,12 +153,12 @@ function updateRootIndexHtml() {
     generatedIndex += '</ul></div>';
 
     const startIndex = rootHtmlContent.indexOf(startMarker);
-    const endIndex = rootHtmlContent.indexOf(endMarker) + endMarker.length;
+    const endIndex = rootHtmlContent.indexOf(endMarker);
 
     if (startIndex !== -1 && endIndex !== -1) {
         rootHtmlContent = rootHtmlContent.slice(0, startIndex + startMarker.length) + '\n' + generatedIndex + '\n' + rootHtmlContent.slice(endIndex);
     } else {
-        rootHtmlContent += `\n${startMarker}\n${generatedIndex}\n${endMarker}\n`;
+        rootHtmlContent = rootHtmlContent.slice(0, rootHtmlContent.length - endMarker.length) + generatedIndex + endMarker;
     }
 
     fs.writeFileSync(rootIndexPath, rootHtmlContent);
